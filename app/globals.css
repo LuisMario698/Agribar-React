@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  /* Common */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+
+  /* Theme: Default (Brand/Corporativo) */
+  --sidebar-bg: #43302b;
+  /* Darker brown for better contrast */
+  --sidebar-fg: #ffffff;
+  --primary: #77b407;
+  --primary-fg: #ffffff;
+}
+
+[data-theme="default"] {
+  /* Theme: Blue (Financiero) */
+  --sidebar-bg: #0f172a;
+  --sidebar-fg: #ffffff;
+  --primary: #3b82f6;
+  --primary-fg: #ffffff;
+}
+
+[data-theme="green"] {
+  /* Theme: Agro (Green) */
+  --sidebar-bg: #14532d;
+  --sidebar-fg: #f0fdf4;
+  --primary: #16a34a;
+  --primary-fg: #ffffff;
+}
+
+[data-theme="purple"] {
+  /* Theme: Modern (Zinc/Indigo) */
+  --sidebar-bg: #18181b;
+  --sidebar-fg: #fafafa;
+  --primary: #6366f1;
+  --primary-fg: #ffffff;
+}
+
+[data-theme="sunset"] {
+  /* Theme: Sunset (Warm) */
+  --sidebar-bg: #7c2d12;
+  --sidebar-fg: #fff7ed;
+  --primary: #ea580c;
+  --primary-fg: #ffffff;
+}
+
+[data-theme="ocean"] {
+  /* Theme: Ocean (Teal) */
+  --sidebar-bg: #115e59;
+  --sidebar-fg: #f0fdfa;
+  --primary: #14b8a6;
+  --primary-fg: #ffffff;
+}
+
+[data-theme="midnight"] {
+  /* Theme: Midnight (Deep Blue) */
+  --sidebar-bg: #020617;
+  --sidebar-fg: #f1f5f9;
+  --primary: #38bdf8;
+  --primary-fg: #0f172a;
+}
+
+[data-theme="ruby"] {
+  /* Theme: Ruby (Elegant Red) */
+  --sidebar-bg: #881337;
+  --sidebar-fg: #fff1f2;
+  --primary: #fb7185;
+  --primary-fg: #ffffff;
+}
+
+[data-theme="royal"] {
+  /* Theme: Royal (Purple) */
+  --sidebar-bg: #4c1d95;
+  --sidebar-fg: #f5f3ff;
+  --primary: #a78bfa;
+  --primary-fg: #ffffff;
+}
+
+[data-theme="gold"] {
+  /* Theme: Gold (Luxury) */
+  --sidebar-bg: #27272a;
+  --sidebar-fg: #fafafa;
+  --primary: #eab308;
+  --primary-fg: #27272a;
+}
+
+[data-theme="forest"] {
+  /* Theme: Forest (Deep Green) */
+  --sidebar-bg: #052e16;
+  --sidebar-fg: #f0fdf4;
+  --primary: #4ade80;
+  --primary-fg: #064e3b;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
