@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutDashboard, Users, Calculator, Settings, X, LogOut, ChevronRight, PanelLeft, Layers, Briefcase } from "lucide-react";
+import { LayoutDashboard, Users, Calculator, Settings, X, LogOut, ChevronRight, PanelLeft, Layers, Briefcase, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
@@ -12,6 +12,7 @@ const navItems = [
     { icon: Briefcase, label: "Actividades", href: "/actividades" },
     { icon: Layers, label: "Cuadrillas", href: "/cuadrillas" },
     { icon: Calculator, label: "Nómina", href: "/nomina" },
+    { icon: Rocket, label: "Features", href: "/features" },
     { icon: Settings, label: "Configuración", href: "/settings" },
 ];
 

@@ -62,7 +62,29 @@ export async function getCuadrillas({
 
 export async function createCuadrilla(data: any) {
     try {
-        // If a specific clave is provided, use it.
+        // 0. Handle Actividad Auto-Creation
+        if (data.actividad && data.actividad.trim() !== "") {
+            const actividadName = data.actividad.trim();
+            const existingActividad = await prisma.actividad.findFirst({
+                where: { nombre: { equals: actividadName, mode: "insensitive" } }
+            });
+
+            if (!existingActividad) {
+                // Create new Actividad
+                await prisma.$transaction(async (tx) => {
+                    const tempClave = `ACT_${Date.now()}`;
+                    const created = await tx.actividad.create({
+                        data: { clave: tempClave, nombre: actividadName }
+                    });
+                    await tx.actividad.update({
+                        where: { id: created.id },
+                        data: { clave: created.id.toString() }
+                    });
+                });
+            }
+        }
+
+        // 1. If a specific clave is provided, use it.
         if (data.clave && data.clave.trim() !== "") {
             const cuadrilla = await prisma.cuadrilla.create({
                 data: {
@@ -77,10 +99,7 @@ export async function createCuadrilla(data: any) {
         }
 
         // AUTO-GENERATION: "Next DB ID"
-        // We use a transaction to creating with a temp holder, then update clave = id
-        // This guarantees we respect the DB's autoincrement sequence (never repeats, always next).
         const result = await prisma.$transaction(async (tx) => {
-            // 1. Create with temporary unique placeholder
             const tempClave = `TEMP_${Date.now()}_${Math.random()}`;
             const created = await tx.cuadrilla.create({
                 data: {
@@ -91,7 +110,6 @@ export async function createCuadrilla(data: any) {
                 },
             });
 
-            // 2. Update clave to match the auto-generated ID (Sequence)
             const updated = await tx.cuadrilla.update({
                 where: { id: created.id },
                 data: { clave: created.id.toString() }
@@ -111,6 +129,27 @@ export async function createCuadrilla(data: any) {
 
 export async function updateCuadrilla(id: number, data: any) {
     try {
+        // 0. Handle Actividad Auto-Creation
+        if (data.actividad && data.actividad.trim() !== "") {
+            const actividadName = data.actividad.trim();
+            const existingActividad = await prisma.actividad.findFirst({
+                where: { nombre: { equals: actividadName, mode: "insensitive" } }
+            });
+
+            if (!existingActividad) {
+                await prisma.$transaction(async (tx) => {
+                    const tempClave = `ACT_${Date.now()}`;
+                    const created = await tx.actividad.create({
+                        data: { clave: tempClave, nombre: actividadName }
+                    });
+                    await tx.actividad.update({
+                        where: { id: created.id },
+                        data: { clave: created.id.toString() }
+                    });
+                });
+            }
+        }
+
         const cuadrilla = await prisma.cuadrilla.update({
             where: { id },
             data: {

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Users, ShieldCheck, ShieldAlert, Pencil, Check, X, Box, Briefcase, Hash, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/components/ui/Pagination";
 import { getCuadrillas, createCuadrilla, updateCuadrilla, toggleCuadrilla } from "@/lib/actions/cuadrillas";
+import { getActividades } from "@/lib/actions/actividades";
 
 export default function CuadrillasPage() {
     // Data State
@@ -12,6 +13,7 @@ export default function CuadrillasPage() {
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({ page: 1, pageSize: 10, total: 0, totalPages: 0 });
     const [searchTerm, setSearchTerm] = useState("");
+    const [actividadesList, setActividadesList] = useState<any[]>([]);
 
     // Create Form State
     const [createFormData, setCreateFormData] = useState({
@@ -33,9 +35,14 @@ export default function CuadrillasPage() {
     });
     const [updating, setUpdating] = useState(false);
 
+    // Actividad Selection Modal State
+    const [isActividadModalOpen, setIsActividadModalOpen] = useState(false);
+    const [actividadTarget, setActividadTarget] = useState<"create" | "edit" | null>(null);
+
     // Initial Load
     useEffect(() => {
         fetchCuadrillas();
+        fetchActividadesList();
     }, [pagination.page, searchTerm]);
 
     const fetchCuadrillas = async () => {
@@ -52,6 +59,13 @@ export default function CuadrillasPage() {
         setLoading(false);
     };
 
+    const fetchActividadesList = async () => {
+        const res = await getActividades({ pageSize: 100 });
+        if (res.success && res.data) {
+            setActividadesList(res.data);
+        }
+    };
+
     // --- CREATE ACTIONS ---
     const handleCreateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCreateFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -65,6 +79,7 @@ export default function CuadrillasPage() {
             if (res.success) {
                 setCreateFormData({ clave: "", nombre: "", grupo: "", actividad: "" });
                 fetchCuadrillas();
+                fetchActividadesList(); // Refresh activities if a new one was created
             } else {
                 alert("Error: " + res.error);
             }
@@ -102,6 +117,7 @@ export default function CuadrillasPage() {
                 setIsEditModalOpen(false);
                 setEditId(null);
                 fetchCuadrillas();
+                fetchActividadesList(); // Refresh activities if a new one was created
             } else {
                 alert("Error: " + res.error);
             }
@@ -115,6 +131,21 @@ export default function CuadrillasPage() {
     const closeEditModal = () => {
         setIsEditModalOpen(false);
         setEditId(null);
+    };
+
+    // --- ACTIVIDAD MODAL ACTIONS ---
+    const openActividadModal = (target: "create" | "edit") => {
+        setActividadTarget(target);
+        setIsActividadModalOpen(true);
+    };
+
+    const handleActividadSelect = (nombre: string) => {
+        if (actividadTarget === "create") {
+            setCreateFormData(prev => ({ ...prev, actividad: nombre }));
+        } else if (actividadTarget === "edit") {
+            setEditFormData(prev => ({ ...prev, actividad: nombre }));
+        }
+        setIsActividadModalOpen(false);
     };
 
     // --- TOGGLE ACTION ---
@@ -131,7 +162,17 @@ export default function CuadrillasPage() {
     return (
         <div className="space-y-4 max-w-[1400px] mx-auto pb-4 relative h-[calc(100vh-100px)] flex flex-col">
 
-            {/* TOP SECTION: Registration Form (Always Create) */}
+            {/* ACTIVIDAD SELECTOR MODAL */}
+            {isActividadModalOpen && (
+                <ActividadSelectorModal
+                    isOpen={isActividadModalOpen}
+                    onClose={() => setIsActividadModalOpen(false)}
+                    onSelect={handleActividadSelect}
+                    actividades={actividadesList}
+                />
+            )}
+
+            {/* TOP SECTION: Registration Form */}
             <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden flex-shrink-0">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3 bg-slate-50/50">
                     <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg shadow-[var(--primary)]/20 bg-[var(--primary)]")}>
@@ -178,13 +219,15 @@ export default function CuadrillasPage() {
                             </InputGroup>
 
                             <InputGroup icon={Briefcase} label="Actividad Principal">
-                                <input
-                                    name="actividad"
-                                    value={createFormData.actividad}
-                                    onChange={handleCreateChange}
-                                    placeholder="Ej. Cosecha"
-                                    className="w-full text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none bg-transparent"
-                                />
+                                <div
+                                    onClick={() => openActividadModal("create")}
+                                    className="w-full text-sm font-semibold text-slate-700 placeholder:text-slate-400 cursor-pointer flex items-center justify-between group"
+                                >
+                                    <span className={createFormData.actividad ? "text-slate-700" : "text-slate-400"}>
+                                        {createFormData.actividad || "Seleccionar..."}
+                                    </span>
+                                    <Search className="w-4 h-4 text-slate-300 group-hover:text-[var(--primary)] transition-colors" />
+                                </div>
                             </InputGroup>
                         </div>
 
@@ -364,13 +407,15 @@ export default function CuadrillasPage() {
                                     </InputGroup>
 
                                     <InputGroup icon={Briefcase} label="Actividad Principal">
-                                        <input
-                                            name="actividad"
-                                            value={editFormData.actividad}
-                                            onChange={handleEditChange}
-                                            placeholder="Ej. Cosecha"
-                                            className="w-full text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none bg-transparent"
-                                        />
+                                        <div
+                                            onClick={() => openActividadModal("edit")}
+                                            className="w-full text-sm font-semibold text-slate-700 placeholder:text-slate-400 cursor-pointer flex items-center justify-between group"
+                                        >
+                                            <span className={editFormData.actividad ? "text-slate-700" : "text-slate-400"}>
+                                                {editFormData.actividad || "Seleccionar..."}
+                                            </span>
+                                            <Search className="w-4 h-4 text-slate-300 group-hover:text-[var(--primary)] transition-colors" />
+                                        </div>
                                     </InputGroup>
                                 </div>
 
@@ -400,7 +445,10 @@ export default function CuadrillasPage() {
     );
 }
 
-// Helper for minimal fields
+// ----------------------------------------------------------------------
+// SUB COMPONENTS
+// ----------------------------------------------------------------------
+
 function InputGroup({ icon: Icon, label, children }: { icon: any, label: string, children: React.ReactNode }) {
     return (
         <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 focus-within:ring-2 focus-within:ring-[var(--primary)]/20 focus-within:border-[var(--primary)]/50 transition-all">
@@ -409,6 +457,101 @@ function InputGroup({ icon: Icon, label, children }: { icon: any, label: string,
                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{label}</span>
             </div>
             {children}
+        </div>
+    );
+}
+
+function ActividadSelectorModal({
+    isOpen,
+    onClose,
+    onSelect,
+    actividades
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelect: (nombre: string) => void;
+    actividades: any[];
+}) {
+    const [search, setSearch] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (isOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isOpen]);
+
+    const filtered = actividades.filter(a =>
+        a.nombre.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const hasExactMatch = filtered.some(a => a.nombre.toLowerCase() === search.toLowerCase());
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[80vh]">
+                <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+                    <h3 className="text-lg font-bold text-slate-800">Seleccionar Actividad</h3>
+                    <p className="text-xs text-slate-500">Busca una existente o escribe una nueva</p>
+                </div>
+
+                <div className="p-4 border-b border-slate-100">
+                    <div className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <input
+                            ref={inputRef}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Buscar o crear..."
+                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-lg font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
+                        />
+                    </div>
+                </div>
+
+                <div className="overflow-y-auto max-h-[260px] p-2 space-y-1 custom-scrollbar">
+                    {search.trim() !== "" && !hasExactMatch && (
+                        <button
+                            onClick={() => onSelect(search)}
+                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-[var(--primary)]/5 text-[var(--primary)] font-bold flex items-center gap-2 group transition-colors"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)]">
+                                <Check className="w-4 h-4" />
+                            </div>
+                            <span>
+                                Usar nueva: "{search}"
+                            </span>
+                        </button>
+                    )}
+
+                    {filtered.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => onSelect(item.nombre)}
+                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                <Briefcase className="w-4 h-4" />
+                            </div>
+                            {item.nombre}
+                        </button>
+                    ))}
+
+                    {filtered.length === 0 && search.trim() === "" && (
+                        <div className="text-center py-8 text-slate-400 text-sm">
+                            Empieza a escribir para buscar...
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-4 bg-slate-50 flex justify-end">
+                    <button
+                        onClick={onClose}
+                        className="px-6 py-2 text-sm font-bold text-slate-500 hover:bg-slate-200 rounded-lg transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
