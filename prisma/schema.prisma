@@ -66,6 +66,7 @@ model Periodo {
   totalDias   Int
   fechaPago   DateTime
   anio        Int
+  activo      Boolean  @default(true)
   tipoPeriodo TipoPeriodo
   nominas     Nomina[]
 }

@@ -1,8 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import { Rocket, Star, Code, Cpu, Shield, Zap, Sparkles, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+import { PeriodCreationModal } from "@/components/features/PeriodCreationModal";
 
 export default function FeaturesPage() {
+    const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
+
     const features = [
         {
             title: "Gestión de Periodos de Nómina",
@@ -10,7 +15,7 @@ export default function FeaturesPage() {
             icon: Calendar,
             status: "planned",
             eta: "Próximamente",
-            href: "/features/periodos" // Link added
+            action: () => setIsPeriodModalOpen(true)
         },
         {
             title: "Reportes Avanzados",
@@ -41,7 +46,6 @@ export default function FeaturesPage() {
             eta: "Futuro Lejano"
         },
     ];
-    // Return statement needs to handle the rendering logic inside the map
 
     return (
         <div className="space-y-8 max-w-[1400px] mx-auto pb-8">
@@ -63,52 +67,49 @@ export default function FeaturesPage() {
 
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {features.map((feature, idx) => {
-                    const CardContent = (
-                        <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 h-full cursor-pointer relative overflow-hidden">
-                            {feature.href && (
-                                <div className="absolute inset-0 bg-blue-50/0 group-hover:bg-blue-50/30 transition-colors z-0" />
-                            )}
-                            <div className="relative z-10">
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className={cn(
-                                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-300",
-                                        feature.status === "planned" ? "bg-amber-50 text-amber-500 group-hover:bg-amber-500 group-hover:text-white" :
-                                            "bg-slate-50 text-slate-400 group-hover:bg-slate-800 group-hover:text-white"
-                                    )}>
-                                        <feature.icon className="w-7 h-7" />
-                                    </div>
-                                    <span className={cn(
-                                        "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide",
-                                        feature.status === "planned" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"
-                                    )}>
-                                        {feature.status === "planned" ? "Planeado" : "Futuro"}
-                                    </span>
+                {features.map((feature, idx) => (
+                    <div
+                        key={idx}
+                        onClick={feature.action}
+                        className={cn(
+                            "bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 h-full relative overflow-hidden",
+                            feature.action ? "cursor-pointer" : "cursor-default"
+                        )}
+                    >
+                        {feature.action && (
+                            <div className="absolute inset-0 bg-blue-50/0 group-hover:bg-blue-50/30 transition-colors z-0" />
+                        )}
+                        <div className="relative z-10">
+                            <div className="flex items-start justify-between mb-6">
+                                <div className={cn(
+                                    "w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-300",
+                                    feature.status === "planned" ? "bg-amber-50 text-amber-500 group-hover:bg-amber-500 group-hover:text-white" :
+                                        "bg-slate-50 text-slate-400 group-hover:bg-slate-800 group-hover:text-white"
+                                )}>
+                                    <feature.icon className="w-7 h-7" />
                                 </div>
+                                <span className={cn(
+                                    "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide",
+                                    feature.status === "planned" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"
+                                )}>
+                                    {feature.status === "planned" ? "Planeado" : "Futuro"}
+                                </span>
+                            </div>
 
-                                <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-[var(--primary)] transition-colors">
-                                    {feature.title}
-                                </h3>
-                                <p className="text-slate-500 leading-relaxed font-medium">
-                                    {feature.description}
-                                </p>
+                            <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-[var(--primary)] transition-colors">
+                                {feature.title}
+                            </h3>
+                            <p className="text-slate-500 leading-relaxed font-medium">
+                                {feature.description}
+                            </p>
 
-                                <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-slate-400">
-                                    <Sparkles className="w-4 h-4" />
-                                    <span>ETA: {feature.eta}</span>
-                                </div>
+                            <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-slate-400">
+                                <Sparkles className="w-4 h-4" />
+                                <span>ETA: {feature.eta}</span>
                             </div>
                         </div>
-                    );
-
-                    return (feature as any).href ? (
-                        <Link key={idx} href={(feature as any).href}>
-                            {CardContent}
-                        </Link>
-                    ) : (
-                        <div key={idx}>{CardContent}</div>
-                    );
-                })}
+                    </div>
+                ))}
 
                 {/* Empty State / Call to Action */}
                 <div className="bg-slate-50 rounded-[2rem] p-8 border border-dashed border-slate-300 flex flex-col items-center justify-center text-center group hover:bg-slate-100 transition-colors cursor-pointer">
@@ -121,6 +122,11 @@ export default function FeaturesPage() {
                     </p>
                 </div>
             </div>
+
+            <PeriodCreationModal
+                isOpen={isPeriodModalOpen}
+                onClose={() => setIsPeriodModalOpen(false)}
+            />
         </div>
     );
 }
