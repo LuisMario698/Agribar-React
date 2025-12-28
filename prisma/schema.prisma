@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,30 +7,26 @@ datasource db {
 }
 
 model Empleado {
-  id              Int       @id @default(autoincrement())
-  clave           String    @unique
-  nombre          String
-  apellidoPaterno String
-  apellidoMaterno String?
-  curp            String    @unique
-  rfc             String?
-  nss             String?
-  estadoOrigen    String?
-  activo          Boolean   @default(true) // estado
-  registroPatronal String?
-  fechaIngreso    DateTime
-  fechaRegistro   DateTime  @default(now())
-  sueldoDiario    Float
-  descuentoInfonavit Float  @default(0)
-  tieneInfonavit  Boolean   @default(false)
-  enCuadrilla     Boolean   @default(false)
-  
-  cuadrillaId     Int?
-  cuadrilla       Cuadrilla? @relation(fields: [cuadrillaId], references: [id])
-  
-  nominas         Nomina[]
-  
-  actualizadoEn   DateTime  @updatedAt
+  id                 Int         @id @default(autoincrement())
+  nombre             String
+  activo             Boolean     @default(true)
+  actualizadoEn      DateTime    @updatedAt
+  apellidoMaterno    String?
+  apellidoPaterno    String
+  clave              String      @unique
+  curp               String      @unique
+  descuentoInfonavit Float       @default(0)
+  enCuadrilla        Boolean     @default(false)
+  estadoOrigen       String?
+  fechaIngreso       DateTime
+  fechaRegistro      DateTime    @default(now())
+  nss                String?
+  registroPatronal   String?
+  rfc                String?
+  sueldoDiario       Float
+  tieneInfonavit     Boolean     @default(false)
+  nominas            Nomina[]
+  cuadrillas         Cuadrilla[] @relation("CuadrillaToEmpleado")
 }
 
 model Cuadrilla {
@@ -41,13 +34,12 @@ model Cuadrilla {
   clave         String     @unique
   nombre        String
   grupo         String?
-  actividad     String?    // Podría ser relación si Actividad es estricta
-  activo        Boolean    @default(true) // estado
+  actividad     String?
+  activo        Boolean    @default(true)
   fechaRegistro DateTime   @default(now())
   actualizadoEn DateTime   @updatedAt
-  
-  empleados     Empleado[]
   nominas       Nomina[]
+  empleados     Empleado[] @relation("CuadrillaToEmpleado")
 }
 
 model Actividad {
@@ -59,16 +51,71 @@ model Actividad {
 }
 
 model Periodo {
-  id          Int      @id @default(autoincrement())
-  clave       String   @unique
+  id          Int         @id @default(autoincrement())
+  clave       String      @unique
   fechaInicio DateTime
   fechaFin    DateTime
   totalDias   Int
   fechaPago   DateTime
   anio        Int
-  activo      Boolean  @default(true)
   tipoPeriodo TipoPeriodo
+  activo      Boolean     @default(true)
   nominas     Nomina[]
+}
+
+model Nomina {
+  id              Int          @id @default(autoincrement())
+  clave           String?      @unique
+  periodoId       Int
+  empleadoId      Int
+  cuadrillaId     Int?
+  pagoPorDia      Float[]
+  campoPorDia     String[]
+  actividadPorDia String[]
+  total           Float
+  subtotal        Float
+  descuento       Float
+  extras          Float
+  comedor         Float
+  estado          EstadoNomina @default(ABIERTA)
+  fechaCierre     DateTime?
+  usuarioCierreId Int?
+  fechaCreacion   DateTime     @default(now())
+  usuarioCreoId   Int?
+  actualizadoEn   DateTime     @updatedAt
+  cuadrilla       Cuadrilla?   @relation(fields: [cuadrillaId], references: [id])
+  empleado        Empleado     @relation(fields: [empleadoId], references: [id])
+  periodo         Periodo      @relation(fields: [periodoId], references: [id])
+  usuarioCierre   Usuario?     @relation("UsuarioCierre", fields: [usuarioCierreId], references: [id])
+  usuarioCreo     Usuario?     @relation("UsuarioCreo", fields: [usuarioCreoId], references: [id])
+}
+
+model Campo {
+  id          Int     @id @default(autoincrement())
+  clave       String  @unique
+  nombre      String
+  descripcion String?
+}
+
+model Usuario {
+  id              Int      @id @default(autoincrement())
+  clave           String   @unique
+  nombre          String
+  email           String   @unique
+  password        String
+  contacto        String?
+  rolId           Int
+  nominasCerradas Nomina[] @relation("UsuarioCierre")
+  nominasCreadas  Nomina[] @relation("UsuarioCreo")
+  rol             Rol      @relation(fields: [rolId], references: [id])
+}
+
+model Rol {
+  id          Int       @id @default(autoincrement())
+  clave       String    @unique
+  nombre      String
+  descripcion String?
+  usuarios    Usuario[]
 }
 
 enum TipoPeriodo {
@@ -78,74 +125,7 @@ enum TipoPeriodo {
   ESPECIAL
 }
 
-model Nomina {
-  id            Int      @id @default(autoincrement())
-  clave         String?  @unique
-  
-  periodoId     Int
-  periodo       Periodo  @relation(fields: [periodoId], references: [id])
-  
-  empleadoId    Int
-  empleado      Empleado @relation(fields: [empleadoId], references: [id])
-  
-  cuadrillaId   Int?
-  cuadrilla     Cuadrilla? @relation(fields: [cuadrillaId], references: [id])
-  
-  // Arrays y Datos Financieros
-  pagoPorDia       Float[]    // Array de PostgreSQL
-  campoPorDia      String[]   // Array de PostgreSQL
-  actividadPorDia  String[]   // Array de PostgreSQL
-  
-  total       Float
-  subtotal    Float
-  descuento   Float
-  extras      Float
-  comedor     Float
-  
-  estado      EstadoNomina @default(ABIERTA)
-  
-  fechaCierre     DateTime?
-  usuarioCierreId Int?
-  usuarioCierre   Usuario? @relation("UsuarioCierre", fields: [usuarioCierreId], references: [id])
-  
-  fechaCreacion   DateTime @default(now())
-  usuarioCreoId   Int?
-  usuarioCreo     Usuario? @relation("UsuarioCreo", fields: [usuarioCreoId], references: [id])
-  
-  actualizadoEn   DateTime @updatedAt
-}
-
 enum EstadoNomina {
   ABIERTA
   CERRADA
-}
-
-model Campo {
-  id          Int      @id @default(autoincrement())
-  clave       String   @unique
-  nombre      String
-  descripcion String?
-}
-
-model Usuario {
-  id          Int      @id @default(autoincrement())
-  clave       String   @unique
-  nombre      String
-  email       String   @unique
-  password    String
-  contacto    String?
-  
-  rolId       Int
-  rol         Rol      @relation(fields: [rolId], references: [id])
-  
-  nominasCreadas  Nomina[] @relation("UsuarioCreo")
-  nominasCerradas Nomina[] @relation("UsuarioCierre")
-}
-
-model Rol {
-  id          Int       @id @default(autoincrement())
-  clave       String    @unique
-  nombre      String    // Capturista, Administrador, Supervisor
-  descripcion String?
-  usuarios    Usuario[]
 }

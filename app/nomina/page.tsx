@@ -14,13 +14,14 @@ import { hasActivePeriod } from "@/lib/actions/periodos";
 export default function NominaPage() {
     const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
 
+    const [refreshKey, setRefreshKey] = useState(0);
+
     useEffect(() => {
         const checkActivePeriod = async () => {
             const result = await hasActivePeriod();
             console.log("Active Period Check Result:", result);
             if (!result.active) {
-                // Only open if NO active period and NO error (or handle error differently)
-                // For now, if count is -1 (error), we might default to NOT opening to be safe, or alert
+                // If checking active period fails (error), we rely on default open=false
                 if (result.count !== -1) {
                     setIsPeriodModalOpen(true);
                 } else {
@@ -29,13 +30,14 @@ export default function NominaPage() {
             }
         };
         checkActivePeriod();
-    }, []);
+    }, [refreshKey]); // Re-check when refreshKey changes (optional, but good for consistency)
 
     return (
         <div className="space-y-6 max-w-[1600px] mx-auto pb-8">
             <PeriodCreationModal
                 isOpen={isPeriodModalOpen}
                 onClose={() => setIsPeriodModalOpen(false)}
+                onSuccess={() => setRefreshKey(prev => prev + 1)}
             />
 
             {/* Header Removed */}
@@ -43,7 +45,7 @@ export default function NominaPage() {
             {/* Control Area */}
             <div className="flex flex-col lg:flex-row gap-6">
                 <div className="w-full lg:w-72 flex-shrink-0">
-                    <WeekSelector />
+                    <WeekSelector key={refreshKey} />
                 </div>
 
                 <div className="flex-1 flex flex-col justify-between gap-4">

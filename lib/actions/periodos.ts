@@ -89,3 +89,17 @@ export async function hasActivePeriod() {
         return { active: false, count: -1, error: String(error) };
     }
 }
+
+export async function getActivePeriod() {
+    try {
+        const period = await prisma.periodo.findFirst({
+            where: {
+                activo: true
+            }
+        });
+        return { success: true, data: period };
+    } catch (error) {
+        console.error("Error getting active period:", error);
+        return { success: false, error: String(error) };
+    }
+}

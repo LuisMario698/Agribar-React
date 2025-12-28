@@ -9,9 +9,10 @@ import { createPeriod } from "@/lib/actions/periodos";
 interface PeriodCreationModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
 }
 
-export function PeriodCreationModal({ isOpen, onClose }: PeriodCreationModalProps) {
+export function PeriodCreationModal({ isOpen, onClose, onSuccess }: PeriodCreationModalProps) {
     const [selectedType, setSelectedType] = useState<string | null>("semanal");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -282,6 +283,7 @@ export function PeriodCreationModal({ isOpen, onClose }: PeriodCreationModalProp
                                             });
 
                                             if (result.success) {
+                                                onSuccess?.();
                                                 onClose();
                                                 // Reset state
                                                 setSelectedType(null);
