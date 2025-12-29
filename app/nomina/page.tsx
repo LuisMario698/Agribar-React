@@ -3,7 +3,6 @@
 import { NominaHeader } from "@/components/nomina/NominaHeader";
 import { WeekSelector } from "@/components/nomina/WeekSelector";
 import { CuadrillaSelector } from "@/components/nomina/CuadrillaSelector";
-import { NominaStats } from "@/components/nomina/NominaStats";
 import { NominaTable } from "@/components/nomina/NominaTable";
 import { Save, AlertCircle } from "lucide-react";
 
@@ -44,14 +43,13 @@ export default function NominaPage() {
 
             {/* Control Area */}
             <div className="flex flex-col lg:flex-row gap-6">
-                <div className="w-full lg:w-72 flex-shrink-0">
+                <div className="w-full lg:w-[415px] flex-shrink-0">
                     <WeekSelector key={refreshKey} />
                 </div>
 
                 <div className="flex-1 flex flex-col justify-between gap-4">
                     <div className="flex flex-col xl:flex-row gap-6 h-full">
                         <CuadrillaSelector />
-                        <NominaStats />
                     </div>
                 </div>
             </div>

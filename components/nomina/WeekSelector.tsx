@@ -46,20 +46,20 @@ export function WeekSelector() {
     }[tipoPeriodo as string] || "Periodo";
 
     return (
-        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200 flex flex-col gap-4 h-full relative overflow-hidden">
-            <div className="flex items-center justify-between">
+        <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-200 flex items-center justify-between gap-3 h-full relative overflow-hidden">
+            <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-slate-500" />
                     <span className="font-bold text-slate-700">{periodLabel}</span>
+                    <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">Activa</span>
                 </div>
-                <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">Activa</span>
+
+                <div className="text-sm font-semibold text-slate-500 ml-7">
+                    {formatDate(fechaInicio)} - {formatDate(fechaFin)}/{formatYear(fechaFin)}
+                </div>
             </div>
 
-            <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 text-center">
-                {formatDate(fechaInicio)} - {formatDate(fechaFin)}/{formatYear(fechaFin)}
-            </div>
-
-            <button className="w-full py-2.5 rounded-xl border border-green-200 text-green-700 font-bold text-sm hover:bg-green-50 transition-colors flex items-center justify-center gap-2">
+            <button className="px-3 py-2 rounded-xl border border-green-200 text-green-700 font-bold text-sm hover:bg-green-50 transition-colors flex items-center gap-2 whitespace-nowrap">
                 <Lock className="w-4 h-4" />
                 Cerrar {periodLabel.toLowerCase()}
             </button>
