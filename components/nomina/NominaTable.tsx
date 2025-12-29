@@ -1,9 +1,40 @@
 "use client";
 
-import { RefreshCw, Maximize2, RotateCcw, Plus, Briefcase, Calculator } from "lucide-react";
+import { RefreshCw, Maximize2, RotateCcw, Plus, Briefcase, Calculator, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { getEmployeesForOrganizer } from "@/lib/actions/cuadrillas";
 
-export function NominaTable() {
+interface NominaTableProps {
+    selectedCuadrillaId?: string;
+}
+
+export function NominaTable({ selectedCuadrillaId }: NominaTableProps) {
+    const [employees, setEmployees] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (selectedCuadrillaId) {
+            loadEmployees(parseInt(selectedCuadrillaId));
+        } else {
+            setEmployees([]);
+        }
+    }, [selectedCuadrillaId]);
+
+    const loadEmployees = async (id: number) => {
+        setLoading(true);
+        try {
+            const result = await getEmployeesForOrganizer(id);
+            if (result.success && result.data) {
+                setEmployees(result.data.assigned);
+            }
+        } catch (error) {
+            console.error("Error loading employees", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const days = [
         { key: 'dom', label: 'dom', date: '14/12' },
         { key: 'lun', label: 'lun', date: '15/12' },
@@ -23,6 +54,7 @@ export function NominaTable() {
                         <Briefcase className="w-4 h-4" />
                     </div>
                     <span className="font-bold text-slate-700 text-lg">Nómina semanal</span>
+                    {loading && <span className="text-xs text-slate-400 animate-pulse">Cargando...</span>}
                 </div>
 
                 <div className="flex gap-2">
@@ -67,18 +99,56 @@ export function NominaTable() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {/* Empty State for layout visualization */}
-                        <tr>
-                            <td colSpan={11} className="p-20 text-center">
-                                <div className="flex flex-col items-center justify-center text-slate-300">
-                                    <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
-                                        <Briefcase className="w-8 h-8" />
+                        {selectedCuadrillaId && employees.length > 0 ? (
+                            employees.map((emp, index) => (
+                                <tr key={emp.id} className="hover:bg-slate-50 group transition-colors">
+                                    <td className="p-4 border-r border-slate-100 font-mono text-xs text-slate-500 sticky left-0 bg-white group-hover:bg-slate-50 z-10">
+                                        {emp.codigo || "S/C"}
+                                    </td>
+                                    <td className="p-4 border-r border-slate-100 sticky left-24 bg-white group-hover:bg-slate-50 z-10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold">
+                                                {emp.nombre.charAt(0)}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="font-bold text-slate-700 text-sm truncate uppercase">{emp.nombre}</div>
+                                                <div className="text-[10px] text-slate-400">Jornalero</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    {days.map((day) => (
+                                        <td key={day.key} className="p-2 border-r border-slate-100 text-center bg-green-50/5 group-hover:bg-green-50/10 transition-colors">
+                                            {/* Placeholder for input */}
+                                            <div className="w-full h-8 bg-white border border-slate-200 rounded-lg shadow-sm"></div>
+                                        </td>
+                                    ))}
+                                    <td className="p-4 border-r border-slate-100 text-center font-bold text-slate-700 bg-blue-50/5">
+                                        $0.00
+                                    </td>
+                                    <td className="p-4 text-center">
+                                        <button className="p-2 text-slate-400 hover:text-green-600 transition-colors">
+                                            <Plus className="w-4 h-4" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={11} className="p-20 text-center">
+                                    <div className="flex flex-col items-center justify-center text-slate-300">
+                                        <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
+                                            {loading ? <RefreshCw className="w-8 h-8 animate-spin" /> : <Briefcase className="w-8 h-8" />}
+                                        </div>
+                                        <p className="text-lg font-medium">
+                                            {loading ? "Cargando empleados..." : (selectedCuadrillaId ? "La cuadrilla está vacía" : "Sin datos para mostrar")}
+                                        </p>
+                                        <p className="text-sm">
+                                            {loading ? "Por favor espere" : (selectedCuadrillaId ? "Agrega empleados usando el botón 'Armar'" : "Selecciona una cuadrilla para comenzar")}
+                                        </p>
                                     </div>
-                                    <p className="text-lg font-medium">Sin datos para mostrar</p>
-                                    <p className="text-sm">Selecciona una cuadrilla para comenzar</p>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

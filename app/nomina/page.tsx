@@ -12,6 +12,7 @@ import { hasActivePeriod } from "@/lib/actions/periodos";
 
 export default function NominaPage() {
     const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
+    const [selectedCuadrillaId, setSelectedCuadrillaId] = useState<string>("");
 
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -49,13 +50,16 @@ export default function NominaPage() {
 
                 <div className="flex-1 flex flex-col justify-between gap-4">
                     <div className="flex flex-col xl:flex-row gap-6 h-full">
-                        <CuadrillaSelector />
+                        <CuadrillaSelector
+                            selectedId={selectedCuadrillaId}
+                            onSelect={setSelectedCuadrillaId}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Main Table */}
-            <NominaTable />
+            <NominaTable selectedCuadrillaId={selectedCuadrillaId} />
 
             {/* Footer Actions */}
             <div className="flex flex-col items-center gap-4 mt-8">
@@ -69,6 +73,6 @@ export default function NominaPage() {
                     Selecciona o arma una cuadrilla para continuar
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

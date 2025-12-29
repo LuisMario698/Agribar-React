@@ -5,10 +5,18 @@ import { useState, useRef, useEffect } from "react";
 
 import { getCuadrillas } from "@/lib/actions/cuadrillas";
 
-export function CuadrillaSelector() {
+interface CuadrillaSelectorProps {
+    selectedId?: string;
+    onSelect?: (id: string) => void;
+}
+
+export function CuadrillaSelector({ selectedId, onSelect }: CuadrillaSelectorProps) {
     const [isOrganizerOpen, setIsOrganizerOpen] = useState(false);
     const [cuadrillas, setCuadrillas] = useState<any[]>([]);
-    const [selectedCuadrillaId, setSelectedCuadrillaId] = useState<string>("");
+    const [internalSelectedId, setInternalSelectedId] = useState<string>("");
+
+    // Use prop if available, otherwise internal state
+    const currentSelectedId = selectedId !== undefined ? selectedId : internalSelectedId;
 
     // Search/Autocomplete states
     const [searchTerm, setSearchTerm] = useState("");
@@ -40,7 +48,11 @@ export function CuadrillaSelector() {
     );
 
     const handleSelect = (cuadrilla: any) => {
-        setSelectedCuadrillaId(cuadrilla.id.toString());
+        if (onSelect) {
+            onSelect(cuadrilla.id.toString());
+        } else {
+            setInternalSelectedId(cuadrilla.id.toString());
+        }
         setSearchTerm(cuadrilla.nombre);
         setIsDropdownOpen(false);
     };
@@ -68,7 +80,10 @@ export function CuadrillaSelector() {
                                 onChange={(e) => {
                                     setSearchTerm(e.target.value);
                                     setIsDropdownOpen(true);
-                                    if (e.target.value === "") setSelectedCuadrillaId("");
+                                    if (e.target.value === "") {
+                                        if (onSelect) onSelect("");
+                                        else setInternalSelectedId("");
+                                    }
                                 }}
                                 onFocus={() => setIsDropdownOpen(true)}
                             />
@@ -85,7 +100,7 @@ export function CuadrillaSelector() {
                                             className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-700 flex items-center justify-between group transition-colors"
                                         >
                                             {c.nombre}
-                                            {selectedCuadrillaId === c.id.toString() && (
+                                            {currentSelectedId === c.id.toString() && (
                                                 <Check className="w-4 h-4 text-green-600" />
                                             )}
                                         </button>
@@ -112,7 +127,7 @@ export function CuadrillaSelector() {
             <CuadrillaOrganizerModal
                 isOpen={isOrganizerOpen}
                 onClose={() => setIsOrganizerOpen(false)}
-                initialCuadrillaId={selectedCuadrillaId}
+                initialCuadrillaId={currentSelectedId}
             />
         </>
     );
